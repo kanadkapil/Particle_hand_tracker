@@ -9,15 +9,14 @@ export default function ParticleSystem() {
   const points = useRef()
   const hands = useStore((state) => state.hands)
   const { viewport } = useThree()
-  
+  // const mouse = useRef({ x: 0, y: 0 }) // Mouse disabled
+
   const count = 8000
-    // ... useControls code ...
   const { shape, colorA, colorB } = useControls({
     shape: { options: ['cloud', 'sphere', 'galaxy', 'heart', 'ring', 'dna', 'torusKnot', 'pyramid', 'cube'] },
     colorA: '#ff0055',
     colorB: '#0055ff'
   })
-    // ... targetPositions, particles, colors setup ... (Lines 22-40)
 
   // Target positions (the shape)
   const targetPositions = useMemo(() => {
@@ -39,7 +38,8 @@ export default function ParticleSystem() {
   const colors = useMemo(() => new Float32Array(count * 3), [count])
   const c1 = new THREE.Color()
   const c2 = new THREE.Color()
-
+  
+  // Hand Inputs
   useFrame((state, delta) => {
     if (!points.current) return
 
@@ -126,8 +126,24 @@ export default function ParticleSystem() {
                     // intensity = 1.2
                  }
                  
-                 // Proximity Glow
+                // Proximity Glow
                  if (dist < 2.5) intensity = Math.max(intensity, 2.0 + (3.0 - dist))
+                 
+                 // Gesture Specifics
+                 if (hand.gesture === 'victory') {
+                     // Victory: Split / Repel sideways (X-axis repel)
+                     // Push particles away from the vertical plane of the hand
+                     vx += Math.sign(hdx) * force * 1.5
+                     // Keep Y-axis calm
+                 } else if (hand.gesture === 'pointing') {
+                     // Pointing: Laser Gravity
+                     // Strong pull towards a line extending from hand? 
+                     // Or just a very tight attractor point like a black hole
+                      vx += (hdx / dist) * force * 3.0
+                      vy += (hdy / dist) * force * 3.0
+                      vz += (hdz / dist) * force * 3.0
+                      intensity = 5.0
+                 }
             }
         }
 

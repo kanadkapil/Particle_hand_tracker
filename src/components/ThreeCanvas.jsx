@@ -5,6 +5,7 @@ import ParticleSystem from './ParticleSystem'
 import DrawingSystem from './DrawingSystem'
 import GameManager from './GameManager'
 import MirrorSystem from './MirrorSystem'
+import SpaceEnvironment from './SpaceEnvironment'
 import { Suspense } from 'react'
 import { useStore } from '../store'
 import { useControls } from 'leva'
@@ -27,6 +28,7 @@ export default function ThreeCanvas() {
     >
       <color attach="background" args={[bgColor]} />
       <Suspense fallback={null}>
+        <SpaceEnvironment />
         {!mirrorMode && <ParticleSystem />}
         {mirrorMode && <MirrorSystem />}
         {drawingMode && <DrawingSystem />}

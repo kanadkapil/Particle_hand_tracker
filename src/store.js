@@ -7,4 +7,6 @@ export const useStore = create((set) => ({
   setGameScore: (score) => set({ gameScore: score }),
   gameActive: false,
   setGameActive: (active) => set({ gameActive: active }),
+  trackerStatus: 'Initializing...',
+  setTrackerStatus: (status) => set({ trackerStatus: status }),
 }))

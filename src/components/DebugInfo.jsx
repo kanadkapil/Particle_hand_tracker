@@ -2,6 +2,7 @@ import { useStore } from '../store'
 
 export default function DebugInfo() {
   const hands = useStore(s => s.hands)
+  const status = useStore(s => s.trackerStatus)
   return (
     <div style={{
         position: 'absolute',
@@ -10,9 +11,11 @@ export default function DebugInfo() {
         color: 'white',
         background: 'rgba(0,0,0,0.5)',
         padding: '10px',
-        zIndex: 9999
+        zIndex: 9999,
+        fontFamily: 'monospace'
     }}>
-        Hands: {hands.length}
+        <div>Status: {status}</div>
+        <div>Hands: {hands.length}</div>
         {hands.map((h, i) => (
             <div key={i}>
                 ID: {h.id} | G: {h.gesture}

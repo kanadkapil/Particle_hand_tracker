@@ -66,6 +66,18 @@ export default function InstructionsOverlay() {
           highlight="#aa55ff"
         />
         <InstructionItem 
+          icon="✌️" 
+          action="Victory" 
+          desc="Split Particles" 
+          highlight="#ffff55"
+        />
+        <InstructionItem 
+          icon="☝️" 
+          action="Pointing" 
+          desc="Black Hole" 
+          highlight="#55ffff"
+        />
+        <InstructionItem 
           icon="🖐️" 
           action="Open Palm" 
           desc="Repel Particles" 

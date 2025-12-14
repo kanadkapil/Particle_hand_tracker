@@ -1,31 +1,56 @@
 import { useEffect, useRef } from 'react'
-import { Hands } from '@mediapipe/hands'
+// import { Hands } from '@mediapipe/hands' // Scripts loaded in index.html
 import { useStore } from '../store'
 
 export default function HandTracker() {
   const videoRef = useRef(null)
   const setHands = useStore((state) => state.setHands)
+  const setTrackerStatus = useStore((state) => state.setTrackerStatus)
   const requestRef = useRef()
 
   useEffect(() => {
     const videoElement = videoRef.current
     if (!videoElement) return
 
-    const hands = new Hands({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-      },
-    })
+    if (setTrackerStatus) setTrackerStatus("Waiting for MediaPipe...")
 
-    hands.setOptions({
-      maxNumHands: 2,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-    })
+    let hands = null
+    let cameraStream = null
+    const pollInterval = setInterval(() => {
+        if (window.Hands) {
+            clearInterval(pollInterval)
+            initHands()
+        }
+    }, 100)
 
-    hands.onResults((results) => {
+    const initHands = () => {
+        if (setTrackerStatus) setTrackerStatus("Initializing Tracker...")
+        try {
+            hands = new window.Hands({
+                locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+                },
+            })
+
+            hands.setOptions({
+                maxNumHands: 2,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5,
+            })
+            
+            hands.onResults(onResults)
+            startCamera()
+        } catch (err) {
+            console.error(err)
+            if (setTrackerStatus) setTrackerStatus(`Init Error: ${err.message}`)
+        }
+    }
+
+    const onResults = (results) => {
+      if (setTrackerStatus) setTrackerStatus("Tracking Active - OK")
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        if (setTrackerStatus) setTrackerStatus(`Hands Detected: ${results.multiHandLandmarks.length}`)
         const newHands = results.multiHandLandmarks.map((landmarks, index) => {
             let x = 0, y = 0
             landmarks.forEach(l => {
@@ -39,18 +64,41 @@ export default function HandTracker() {
 
             const thumbTip = landmarks[4]
             const indexTip = landmarks[8]
+            const middleTip = landmarks[12]
+            const ringTip = landmarks[16]
+            const pinkyTip = landmarks[20]
+
+            const thumbIP = landmarks[3] // Thumb IP joint
+            const indexPIP = landmarks[6]
+            const middlePIP = landmarks[10]
+            const ringPIP = landmarks[14]
+            const pinkyPIP = landmarks[18]
+
+            const indexCurled = indexTip.y > indexPIP.y
+            const middleCurled = middleTip.y > middlePIP.y
+            const ringCurled = ringTip.y > ringPIP.y
+            const pinkyCurled = pinkyTip.y > pinkyPIP.y
+
+            let gesture = 'open'
+
             const pinchDist = Math.hypot(thumbTip.x - indexTip.x, thumbTip.y - indexTip.y)
-            const pinched = pinchDist < 0.05
             
-            const isClosed = 
-                landmarks[12].y > landmarks[10].y && 
-                landmarks[16].y > landmarks[14].y && 
-                landmarks[20].y > landmarks[18].y
+            if (pinchDist < 0.05) {
+                gesture = 'pinch'
+            } else if (indexCurled && middleCurled && ringCurled && pinkyCurled) {
+                gesture = 'closed' 
+            } else if (!indexCurled && !middleCurled && ringCurled && pinkyCurled) {
+                gesture = 'victory' 
+            } else if (!indexCurled && middleCurled && ringCurled && pinkyCurled) {
+                gesture = 'pointing'
+            } else {
+                gesture = 'open'
+            }
 
             return {
                 id: index,
                 position: center,
-                gesture: pinched ? 'pinch' : (isClosed ? 'closed' : 'open'),
+                gesture: gesture,
                 pinchDistance: pinchDist
             }
         })
@@ -58,16 +106,16 @@ export default function HandTracker() {
       } else {
         setHands([])
       }
-    })
+    }
 
     const predict = async () => {
         if (videoElement && videoElement.readyState === 4) {
-             // Only predict if video is playing
              if (!videoElement.paused && !videoElement.ended) {
                 try {
-                    await hands.send({ image: videoElement })
+                    if(hands) await hands.send({ image: videoElement })
                 } catch (err) {
                     console.error("MP Error", err)
+                    if (setTrackerStatus) setTrackerStatus(`MediaPipe Error: ${err.message}`)
                 }
              }
         }
@@ -75,28 +123,38 @@ export default function HandTracker() {
     }
 
     const startCamera = async () => {
+        if (setTrackerStatus) setTrackerStatus("Requesting Camera (Any)...")
         try {
+            // Simplified constraints
             const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { width: 640, height: 480, facingMode: "user" } 
+                video: { width: 640, height: 480 } 
             })
+            cameraStream = stream
             videoElement.srcObject = stream
             videoElement.onloadedmetadata = () => {
+                if (setTrackerStatus) setTrackerStatus("Video Ready. Starting Loop...")
                 videoElement.play().then(() => {
                     requestRef.current = requestAnimationFrame(predict)
-                }).catch(e => console.error("Play error", e))
+                }).catch(e => {
+                    console.error("Play error", e)
+                    if (setTrackerStatus) setTrackerStatus(`Play Error: ${e.message}`)
+                })
             }
         } catch (e) {
             console.error("Camera Error:", e)
+            if (setTrackerStatus) setTrackerStatus(`Camera Error: ${e.message}. Check browser permissions.`)
         }
     }
 
-    startCamera()
-
+    // Cleanup
     return () => {
+        clearInterval(pollInterval)
         if (requestRef.current) cancelAnimationFrame(requestRef.current)
-        hands.close()
-        const stream = videoElement.srcObject
-        if (stream) stream.getTracks().forEach(t => t.stop())
+        if (hands) hands.close()
+        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop())
+        else if (videoElement.srcObject) {
+             videoElement.srcObject.getTracks().forEach(t => t.stop())
+        }
     }
   }, [setHands])
 
