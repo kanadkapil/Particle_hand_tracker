@@ -7,16 +7,17 @@ import { generateShape } from '../utils/shapes'
 
 export default function ParticleSystem() {
   const points = useRef()
-  const hand = useStore((state) => state.hand)
+  const hands = useStore((state) => state.hands)
   const { viewport } = useThree()
   
   const count = 8000
-  
+    // ... useControls code ...
   const { shape, colorA, colorB } = useControls({
     shape: { options: ['cloud', 'sphere', 'galaxy', 'heart', 'ring', 'dna', 'torusKnot', 'pyramid', 'cube'] },
     colorA: '#ff0055',
     colorB: '#0055ff'
   })
+    // ... targetPositions, particles, colors setup ... (Lines 22-40)
 
   // Target positions (the shape)
   const targetPositions = useMemo(() => {
@@ -44,21 +45,14 @@ export default function ParticleSystem() {
 
     c1.set(colorA)
     c2.set(colorB)
-
-    // Hand Inputs
-    let hx = 0, hy = 0, hz = 0
-    let isHandActive = false
-    let pinchStrength = 0
     
-    if (hand) {
-        isHandActive = true
-        // Remap hand (-1..1) to Viewport
-        hx = hand.position.x * (viewport.width / 2)
-        hy = hand.position.y * (viewport.height / 2)
-        hz = 0 // Hand is at Z=0 plane typically
-        
-        if (hand.gesture === 'pinch') pinchStrength = 1.0
-    }
+    // Prepare hands data
+    const activeHands = hands.map(h => ({
+        x: h.position.x * (viewport.width / 2),
+        y: h.position.y * (viewport.height / 2),
+        z: 0,
+        gesture: h.gesture
+    }))
 
     const positions = points.current.geometry.attributes.position.array
     const colorAttr = points.current.geometry.attributes.color.array
@@ -94,33 +88,46 @@ export default function ParticleSystem() {
         vy += dy * 2.0 * delta
         vz += dz * 2.0 * delta
 
-        // 2. Hand Interaction
-        if (isHandActive) {
+        // 2. Hand Interactions (Multi-hand)
+        let intensity = 1.0
+        
+        for (let hand of activeHands) {
+            const hx = hand.x
+            const hy = hand.y
+            const hz = hand.z
+            
             const hdx = hx - px
             const hdy = hy - py
             const hdz = hz - pz
             const distSq = hdx*hdx + hdy*hdy + hdz*hdz
             const dist = Math.sqrt(distSq)
             
-            // Repel/Attract radius
+            // Interaction Radius
             if (dist < 4.0) {
                  const force = (4.0 - dist) * 20.0 * delta
                  
-                 if (pinchStrength > 0.5) {
+                 if (hand.gesture === 'pinch') {
                     // Pinch: Strong Attraction
                     vx += (hdx / dist) * force * 2.0
                     vy += (hdy / dist) * force * 2.0
                     vz += (hdz / dist) * force * 2.0
+                    // Color Boost near pinch
+                     intensity = 3.0
                  } else if (hand.gesture === 'closed') {
-                    // Closed: Gentle Swirl? Or Strong Repel? Let's do Swirl
+                    // Closed: Swirl
                     vx += -(hdy / dist) * force * 2.0
                     vy += (hdx / dist) * force * 2.0
+                    // intensity = 1.5
                  } else {
                     // Open: Spread/Repel
                     vx -= (hdx / dist) * force * 0.5
                     vy -= (hdy / dist) * force * 0.5
                     vz -= (hdz / dist) * force * 0.5
+                    // intensity = 1.2
                  }
+                 
+                 // Proximity Glow
+                 if (dist < 2.5) intensity = Math.max(intensity, 2.0 + (3.0 - dist))
             }
         }
 
@@ -153,16 +160,6 @@ export default function ParticleSystem() {
         const g = c1.g * mixFactor + c2.g * (1 - mixFactor)
         const b = c1.b * mixFactor + c2.b * (1 - mixFactor)
         
-        // Boost brightness on fast movement or proximity
-        let intensity = 1.0
-        if (isHandActive) {
-            const hdx = hx - px
-            const hdy = hy - py
-            const hdz = hz - pz
-            const dist = Math.sqrt(hdx*hdx + hdy*hdy + hdz*hdz)
-            if (dist < 2.5) intensity = 2.0 + (3.0 - dist)
-        }
-
         colorAttr[i3] = r * intensity
         colorAttr[i3+1] = g * intensity
         colorAttr[i3+2] = b * intensity

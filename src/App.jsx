@@ -1,6 +1,7 @@
 import ThreeCanvas from "./components/ThreeCanvas";
 import HandTracker from "./components/HandTracker";
 import InstructionsOverlay from "./components/InstructionsOverlay";
+import DebugInfo from "./components/DebugInfo";
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <ThreeCanvas />
       <HandTracker />
       <InstructionsOverlay />
+      <DebugInfo />
     </div>
   );
 }

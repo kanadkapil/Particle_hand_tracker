@@ -1,4 +1,9 @@
+import { useStore } from '../store'
+
 export default function InstructionsOverlay() {
+  const gameActive = useStore(s => s.gameActive)
+  const gameScore = useStore(s => s.gameScore)
+
   return (
     <div style={{
       position: 'absolute',
@@ -17,6 +22,20 @@ export default function InstructionsOverlay() {
       userSelect: 'none',
       boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
     }}>
+      {gameActive && (
+          <div style={{
+              position: 'absolute',
+              top: -60,
+              left: 0,
+              fontSize: '2rem',
+              fontWeight: 'bold',
+              color: '#ff3333',
+              textShadow: '0 0 10px red'
+          }}>
+              SCORE: {gameScore}
+          </div>
+      )}
+
       <h2 style={{ 
         margin: '0 0 16px 0', 
         fontSize: '1.2rem', 

@@ -1,6 +1,10 @@
 import { create } from 'zustand'
 
 export const useStore = create((set) => ({
-  hand: null, // { position: {x,y,z}, gesture: 'open'|'closed'|'pinch', pinchDistance: number }
-  setHand: (hand) => set({ hand }),
+  hands: [], // Array of { id, position: {x,y,z}, gesture, pinchDistance }
+  setHands: (hands) => set({ hands }),
+  gameScore: 0,
+  setGameScore: (score) => set({ gameScore: score }),
+  gameActive: false,
+  setGameActive: (active) => set({ gameActive: active }),
 }))

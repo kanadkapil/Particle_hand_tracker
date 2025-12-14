@@ -1,16 +1,84 @@
-# React + Vite
+# 🧙‍♂️ Interactive 3D Particle Hand Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A real-time, interactive 3D particle system controlled by your hand gestures! Built with **React**, **Three.js (R3F)**, and **MediaPipe Hands**.
 
-Currently, two official plugins are available:
+![Demo](https://via.placeholder.com/800x400?text=Particle+Hand+Tracker+Demo)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## React Compiler
+- **Real-time Hand Tracking**: Control 8,000 particles with low latency using your webcam.
+- **Gesture Recognition**:
+  - ✋ **Move**: Guide the particle cloud.
+  - 👌 **Pinch**: Implode particles (Black Hole effect) with color shifts.
+  - ✊ **Closed Fist**: Swirl particles in a vortex.
+  - 🖐️ **Open Hand**: Repel particles.
+- **✨ Visual Modes**:
+  - **Drawing Mode**: Paint 3D trails in mid-air using the Pinch gesture.
+  - **Mirror Mode**: Turn yourself into a digital particle cloud (Self-Portrait).
+  - **Game Mode (Asteroids)**: Defend the screen from incoming red asteroids using your hands as shields.
+- **🎨 Customization**:
+  - Switch shapes: Cloud, Sphere, Galaxy, DNA, Pyramid, Torus Knot.
+  - Change colors and background.
+  - Adjust settings via the **Leva** control panel.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 Getting Started
 
-## Expanding the ESLint configuration
+### Prerequisites
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Node.js (v16 or higher)
+- A webcam
+
+### Installation
+
+1. **Clone the repository** (or navigate to the folder):
+
+   ```bash
+   cd particle-hand-tracker
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**:
+
+   ```bash
+   npm run dev
+   ```
+
+4. **Allow Camera Access**:
+   - Open `http://localhost:5173` in your browser.
+   - Click "Allow" when the browser asks for camera permissions.
+
+## 🎮 How to Play
+
+### 1. Standard Mode
+
+- Move your hand to attract particles.
+- **Pinch** to explode them.
+- Use the **Controls Panel** (top right) to change the **Shape** (e.g., to 'DNA' or 'Heart').
+
+### 2. Drawing Mode
+
+- Enable `drawingMode` in the panel.
+- **Pinch** your index and thumb together to draw light trails in 3D space!
+
+### 3. Game Mode
+
+- Enable `gameMode`.
+- Red asteroids will fly at you.
+- Intercept them with your hand to destroy them and score points!
+
+## 🛠️ Tech Stack
+
+- **[Vite](https://vitejs.dev/)**: Fast frontend tooling.
+- **[React Three Fiber](https://docs.pmnd.rs/react-three-fiber)**: Declarative Three.js for React.
+- **[MediaPipe Hands](https://developers.google.com/mediapipe)**: ML-based hand tracking.
+- **[Zustand](https://github.com/pmndrs/zustand)**: State management.
+- **[Postprocessing](https://github.com/pmndrs/postprocessing)**: Bloom and visual effects.
+
+## 📝 License
+
+MIT License. Feel free to use and modify!
