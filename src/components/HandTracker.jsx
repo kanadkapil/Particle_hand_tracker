@@ -25,6 +25,7 @@ export default function HandTracker() {
 
     hands.onResults((results) => {
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        // console.log("Hand detected", results.multiHandLandmarks[0]) // Excessive log
         const landmarks = results.multiHandLandmarks[0]
         
         // Calculate Centroid (approximate)
@@ -59,24 +60,47 @@ export default function HandTracker() {
           pinchDistance: pinchDist
         })
       } else {
+        // console.log("No hand")
         setHand(null)
       }
     })
 
-    const camera = new Camera(videoRef.current, {
-      onFrame: async () => {
-        if (videoRef.current) {
-          await hands.send({ image: videoRef.current })
-        }
-      },
-      width: 640,
-      height: 480,
-    })
+    const videoElement = videoRef.current
+    if (!videoElement) return
 
-    camera.start()
+    let camera = null
+
+    const setupCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480 }
+        })
+        videoElement.srcObject = stream
+        videoElement.onloadedmetadata = () => {
+             videoElement.play()
+             console.log("Video playing, starting Hands processing")
+             camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    await hands.send({ image: videoElement })
+                },
+                width: 640,
+                height: 480,
+             })
+             camera.start()
+        }
+      } catch (err) {
+        console.error("Error accessing camera:", err)
+      }
+    }
+
+    setupCamera()
 
     return () => {
-       // Cleanup not explicitly necessary for singleton, but good practice
+        const stream = videoElement.srcObject
+        if (stream) {
+            const tracks = stream.getTracks()
+            tracks.forEach(track => track.stop())
+        }
     }
   }, [setHand])
 
