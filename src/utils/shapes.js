@@ -47,6 +47,35 @@ export const generateShape = (type, count) => {
        x = r * Math.cos(theta)
        y = (Math.random() - 0.5) * 0.5
        z = r * Math.sin(theta)
+    } else if (type === 'dna') {
+       const h = (Math.random() - 0.5) * 12 // Height
+       const angle = h * 2.5 // Twist
+       const r = 2
+       const strand = Math.random() > 0.5 ? 1 : -1 // Two strands
+       x = r * Math.cos(angle + (strand * Math.PI))
+       y = h
+       z = r * Math.sin(angle + (strand * Math.PI))
+       // Add thickness to strands
+       x += (Math.random() - 0.5) * 0.5
+       z += (Math.random() - 0.5) * 0.5
+    } else if (type === 'torusKnot') {
+       // Torus Knot (p=2, q=3)
+       const t = Math.random() * Math.PI * 2 * 3
+       const tubo = 0.8 + (Math.random() - 0.5) * 0.5
+       const p = 2, q = 3
+       const r = 3 + Math.cos(q * t / p) * 1.5
+       x = r * Math.cos(t) * tubo
+       y = r * Math.sin(t) * tubo
+       z = Math.sin(q * t / p) * 1.5 * tubo
+    } else if (type === 'pyramid') {
+       const h = Math.random() * 8 - 4
+       // Width depends on height (bottom is wide, top is point)
+       // Map h (-4 to 4) to w (4 to 0)
+       const relH = (h + 4) / 8 // 0 to 1
+       const w = 4 * (1 - relH)
+       x = (Math.random() - 0.5) * 2 * w
+       z = (Math.random() - 0.5) * 2 * w
+       y = h
     }
 
     pos[i * 3] = x

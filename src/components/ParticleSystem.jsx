@@ -13,7 +13,7 @@ export default function ParticleSystem() {
   const count = 8000
   
   const { shape, colorA, colorB } = useControls({
-    shape: { options: ['cloud', 'sphere', 'galaxy', 'heart', 'ring', 'cube'] },
+    shape: { options: ['cloud', 'sphere', 'galaxy', 'heart', 'ring', 'dna', 'torusKnot', 'pyramid', 'cube'] },
     colorA: '#ff0055',
     colorB: '#0055ff'
   })

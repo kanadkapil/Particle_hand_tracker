@@ -3,14 +3,19 @@ import { OrbitControls } from '@react-three/drei'
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import ParticleSystem from './ParticleSystem'
 import { Suspense } from 'react'
+import { useControls } from 'leva'
 
 export default function ThreeCanvas() {
+  const { bgColor } = useControls({
+    bgColor: '#050505'
+  })
+
   return (
     <Canvas
       camera={{ position: [0, 0, 8], fov: 60 }}
       gl={{ antialias: false, alpha: false, stencil: false, depth: false }}
     >
-      <color attach="background" args={['#050505']} />
+      <color attach="background" args={[bgColor]} />
       <Suspense fallback={null}>
         <ParticleSystem />
       </Suspense>
