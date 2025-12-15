@@ -79,14 +79,41 @@ export default function HandTracker() {
             const ringCurled = ringTip.y > ringPIP.y
             const pinkyCurled = pinkyTip.y > pinkyPIP.y
 
+            // Improved Thumb Detection
+            // We use the Wrist (0) as a reference point to determine hand orientation
+            const wrist = landmarks[0]
+            const thumbMCP = landmarks[2]
+            
+            // Check general hand orientation (upright vs inverted)
+            const isHandUpright = wrist.y > middlePIP.y 
+            const isHandInverted = wrist.y < middlePIP.y
+
+            // Thumb states relative to knuckles
+            const thumbIsHigh = thumbTip.y < thumbMCP.y
+            const thumbIsLow = thumbTip.y > thumbMCP.y
+            
+            // Strict Thumbs Up: Hand is upright, fingers curled, thumb matches
+            // Strict Thumbs Down: Hand might be rotated, but mainly thumb tip is clearly below
+            
+            const fingersCurled = indexCurled && middleCurled && ringCurled && pinkyCurled
+            
             let gesture = 'open'
 
             const pinchDist = Math.hypot(thumbTip.x - indexTip.x, thumbTip.y - indexTip.y)
             
             if (pinchDist < 0.05) {
                 gesture = 'pinch'
-            } else if (indexCurled && middleCurled && ringCurled && pinkyCurled) {
-                gesture = 'closed' 
+            } else if (fingersCurled) {
+                // Thumbs Up: Thumb tip is ABOVE thumb joint, and generic 'up'
+                if (thumbIsHigh && thumbTip.y < middlePIP.y) {
+                     gesture = 'thumbs_up'
+                } 
+                // Thumbs Down: Thumb tip is BELOW thumb joint, and significantly low
+                else if (thumbIsLow && thumbTip.y > middlePIP.y + 0.05) {
+                     gesture = 'thumbs_down'
+                } else {
+                     gesture = 'closed'
+                }
             } else if (!indexCurled && !middleCurled && ringCurled && pinkyCurled) {
                 gesture = 'victory' 
             } else if (!indexCurled && middleCurled && ringCurled && pinkyCurled) {

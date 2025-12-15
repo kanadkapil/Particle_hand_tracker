@@ -66,6 +66,18 @@ export default function InstructionsOverlay() {
           highlight="#aa55ff"
         />
         <InstructionItem 
+          icon="👍" 
+          action="Thumbs Up" 
+          desc="Zoom In" 
+          highlight="#55ff55"
+        />
+        <InstructionItem 
+          icon="👎" 
+          action="Thumbs Down" 
+          desc="Zoom Out" 
+          highlight="#ff5555"
+        />
+        <InstructionItem 
           icon="✌️" 
           action="Victory" 
           desc="Split Particles" 

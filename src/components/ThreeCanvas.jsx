@@ -6,6 +6,7 @@ import DrawingSystem from './DrawingSystem'
 import GameManager from './GameManager'
 import MirrorSystem from './MirrorSystem'
 import SpaceEnvironment from './SpaceEnvironment'
+import CameraZoomController from './CameraZoomController'
 import { Suspense } from 'react'
 import { useStore } from '../store'
 import { useControls } from 'leva'
@@ -29,6 +30,7 @@ export default function ThreeCanvas() {
       <color attach="background" args={[bgColor]} />
       <Suspense fallback={null}>
         <SpaceEnvironment />
+        <CameraZoomController />
         {!mirrorMode && <ParticleSystem />}
         {mirrorMode && <MirrorSystem />}
         {drawingMode && <DrawingSystem />}
